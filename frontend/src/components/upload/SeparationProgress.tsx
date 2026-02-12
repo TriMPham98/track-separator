@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { createJobWebSocket } from "@/lib/api";
+import { useEffect, useState, useRef } from "react";
+import { createJobWebSocket, api } from "@/lib/api";
 import { STEM_NAMES, StemName } from "@/types";
 import { CheckCircle2, Loader2, XCircle } from "lucide-react";
 
@@ -17,30 +17,69 @@ export default function SeparationProgress({
   const [status, setStatus] = useState<string>("pending");
   const [stemsFound, setStemsFound] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const completedRef = useRef(false);
 
   useEffect(() => {
-    const ws = createJobWebSocket(jobId);
+    let ws: WebSocket | null = null;
+    let pollInterval: ReturnType<typeof setInterval> | null = null;
+    let cancelled = false;
 
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.type === "status") {
-        setStatus(data.status);
-        if (data.stems_found) setStemsFound(data.stems_found);
-        if (data.status === "completed") {
-          onComplete(data.stems_found || []);
+    const handleDone = (stems: string[]) => {
+      if (completedRef.current || cancelled) return;
+      completedRef.current = true;
+      onComplete(stems);
+    };
+
+    // Try WebSocket first
+    try {
+      ws = createJobWebSocket(jobId);
+
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        if (data.type === "status") {
+          setStatus(data.status);
+          if (data.stems_found) setStemsFound(data.stems_found);
+          if (data.status === "completed") handleDone(data.stems_found || []);
+          if (data.status === "failed") setError(data.error || "Separation failed");
         }
-        if (data.status === "failed") {
-          setError(data.error || "Separation failed");
+        if (data.type === "stem_complete") {
+          setStemsFound(data.stems_found);
         }
-      }
-      if (data.type === "stem_complete") {
-        setStemsFound(data.stems_found);
+      };
+
+      ws.onerror = () => {
+        // WS failed, rely on polling
+      };
+    } catch {
+      // WS creation failed, rely on polling
+    }
+
+    // Always poll as fallback
+    const poll = async () => {
+      if (cancelled || completedRef.current) return;
+      try {
+        const job = await api.getJob(jobId);
+        setStatus(job.status);
+        setStemsFound(job.stems_found);
+        if (job.status === "completed") {
+          handleDone(job.stems_found);
+        }
+        if (job.status === "failed") {
+          setError(job.error || "Separation failed");
+        }
+      } catch {
+        // ignore transient errors
       }
     };
 
-    ws.onerror = () => setError("WebSocket connection error");
+    pollInterval = setInterval(poll, 2000);
+    poll(); // immediate first poll
 
-    return () => ws.close();
+    return () => {
+      cancelled = true;
+      ws?.close();
+      if (pollInterval) clearInterval(pollInterval);
+    };
   }, [jobId, onComplete]);
 
   return (
