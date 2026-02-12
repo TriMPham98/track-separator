@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { createJobWebSocket, api } from "@/lib/api";
+import { api } from "@/lib/api";
 import { STEM_NAMES, StemName } from "@/types";
 import { CheckCircle2, Loader2, XCircle } from "lucide-react";
 
@@ -20,7 +20,6 @@ export default function SeparationProgress({
   const completedRef = useRef(false);
 
   useEffect(() => {
-    let ws: WebSocket | null = null;
     let pollInterval: ReturnType<typeof setInterval> | null = null;
     let cancelled = false;
 
@@ -30,31 +29,7 @@ export default function SeparationProgress({
       onComplete(stems);
     };
 
-    // Try WebSocket first
-    try {
-      ws = createJobWebSocket(jobId);
-
-      ws.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        if (data.type === "status") {
-          setStatus(data.status);
-          if (data.stems_found) setStemsFound(data.stems_found);
-          if (data.status === "completed") handleDone(data.stems_found || []);
-          if (data.status === "failed") setError(data.error || "Separation failed");
-        }
-        if (data.type === "stem_complete") {
-          setStemsFound(data.stems_found);
-        }
-      };
-
-      ws.onerror = () => {
-        // WS failed, rely on polling
-      };
-    } catch {
-      // WS creation failed, rely on polling
-    }
-
-    // Always poll as fallback
+    // Poll job status as the primary progress mechanism
     const poll = async () => {
       if (cancelled || completedRef.current) return;
       try {
@@ -73,11 +48,10 @@ export default function SeparationProgress({
     };
 
     pollInterval = setInterval(poll, 2000);
-    poll(); // immediate first poll
+    poll();
 
     return () => {
       cancelled = true;
-      ws?.close();
       if (pollInterval) clearInterval(pollInterval);
     };
   }, [jobId, onComplete]);
