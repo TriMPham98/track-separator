@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -C /Users/trimpham98/repos/track-separator log --oneline -10)",
+      "Bash(git -C /Users/trimpham98/repos/track-separator status)",
+      "Bash(git -C /Users/trimpham98/repos/track-separator config -l)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "Bash(npx create-next-app:*)",
+      "Bash(npx create-next-app@latest:*)",
+      "Bash(1 << 'EOF'\nNo\nEOF)",
+      "Bash(npm install:*)",
+      "Bash(npx next build:*)"
+    ]
+  }
+}
