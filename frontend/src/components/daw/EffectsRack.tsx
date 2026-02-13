@@ -1,9 +1,11 @@
 "use client";
 
+import { useMemo } from "react";
 import { X, Power } from "lucide-react";
 import { useStore } from "@/store";
 import { EffectType, EffectState } from "@/types";
 import Slider from "@/components/ui/Slider";
+import { useShallow } from "zustand/react/shallow";
 
 const EFFECT_TYPES: { type: EffectType; label: string }[] = [
   { type: "eq3", label: "EQ3" },
@@ -12,12 +14,16 @@ const EFFECT_TYPES: { type: EffectType; label: string }[] = [
   { type: "compressor", label: "Compressor" },
 ];
 
+const EMPTY_EFFECTS: EffectState[] = [];
+
 export default function EffectsRack() {
   const effectsOpen = useStore((s) => s.effectsOpen);
   const toggleEffects = useStore((s) => s.toggleEffects);
   const selectedTrackId = useStore((s) => s.selectedTrackId);
-  const effects = useStore((s) =>
-    selectedTrackId ? s.effects[selectedTrackId] || [] : []
+  const effects = useStore(
+    useShallow((s) =>
+      selectedTrackId ? s.effects[selectedTrackId] ?? EMPTY_EFFECTS : EMPTY_EFFECTS
+    )
   );
   const addEffect = useStore((s) => s.addEffect);
   const removeEffect = useStore((s) => s.removeEffect);
