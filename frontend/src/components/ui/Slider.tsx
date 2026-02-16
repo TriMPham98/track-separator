@@ -21,8 +21,25 @@ export default function Slider({
   vertical,
   className = "",
 }: SliderProps) {
+  if (vertical) {
+    return (
+      <div className={`flex flex-col items-center gap-1 ${className}`}>
+        {label && <label className="text-xs text-zinc-500">{label}</label>}
+        <input
+          type="range"
+          min={min}
+          max={max}
+          step={step}
+          value={value}
+          onChange={(e) => onChange(parseFloat(e.target.value))}
+          className="vertical-slider accent-blue-500"
+        />
+      </div>
+    );
+  }
+
   return (
-    <div className={`flex ${vertical ? "flex-col items-center" : "flex-col"} gap-1 ${className}`}>
+    <div className={`flex flex-col gap-1 ${className}`}>
       {label && <label className="text-xs text-zinc-500">{label}</label>}
       <input
         type="range"
@@ -31,11 +48,7 @@ export default function Slider({
         step={step}
         value={value}
         onChange={(e) => onChange(parseFloat(e.target.value))}
-        className={`
-          accent-blue-500 bg-zinc-700 rounded-full
-          ${vertical ? "h-24 -rotate-90 origin-center" : "w-full"}
-        `}
-        style={vertical ? { writingMode: "vertical-lr" as never } : undefined}
+        className="w-full accent-blue-500"
       />
     </div>
   );

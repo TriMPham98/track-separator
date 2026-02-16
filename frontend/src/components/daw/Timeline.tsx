@@ -5,9 +5,10 @@ import { AudioEngine } from "@/audio/AudioEngine";
 
 interface TimelineProps {
   duration: number;
+  headerWidth: number;
 }
 
-export default function Timeline({ duration }: TimelineProps) {
+export default function Timeline({ duration, headerWidth }: TimelineProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const draw = useCallback(() => {
@@ -31,15 +32,16 @@ export default function Timeline({ duration }: TimelineProps) {
 
     if (duration <= 0) return;
 
-    // Draw time markers every second
-    const pxPerSec = width / duration;
+    const trackAreaWidth = width - headerWidth;
+    const pxPerSec = trackAreaWidth / duration;
+
     ctx.fillStyle = "#52525b";
     ctx.font = "10px monospace";
     ctx.textAlign = "center";
 
     const step = pxPerSec > 50 ? 1 : pxPerSec > 10 ? 5 : 10;
     for (let t = 0; t <= duration; t += step) {
-      const x = t * pxPerSec;
+      const x = headerWidth + t * pxPerSec;
       ctx.fillStyle = "#3f3f46";
       ctx.fillRect(x, height - 8, 1, 8);
       if (t % (step * 2) === 0) {
@@ -49,15 +51,7 @@ export default function Timeline({ duration }: TimelineProps) {
         ctx.fillText(`${m}:${s.toString().padStart(2, "0")}`, x, height - 12);
       }
     }
-
-    // Draw playhead
-    try {
-      const engine = AudioEngine.getInstance();
-      const playheadX = engine.currentTime * pxPerSec;
-      ctx.fillStyle = "#ef4444";
-      ctx.fillRect(playheadX, 0, 2, height);
-    } catch {}
-  }, [duration]);
+  }, [duration, headerWidth]);
 
   useEffect(() => {
     let raf: number;
@@ -74,18 +68,20 @@ export default function Timeline({ duration }: TimelineProps) {
       const canvas = canvasRef.current;
       if (!canvas || duration <= 0) return;
       const rect = canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const time = (x / rect.width) * duration;
+      const x = e.clientX - rect.left - headerWidth;
+      const trackAreaWidth = rect.width - headerWidth;
+      if (x < 0) return;
+      const time = (x / trackAreaWidth) * duration;
       AudioEngine.getInstance().seekTo(Math.max(0, time));
     },
-    [duration]
+    [duration, headerWidth]
   );
 
   return (
     <canvas
       ref={canvasRef}
       onClick={handleClick}
-      className="w-full h-8 cursor-pointer"
+      className="w-full h-8 cursor-pointer flex-shrink-0"
     />
   );
 }

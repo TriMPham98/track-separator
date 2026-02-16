@@ -10,7 +10,10 @@ import TrackList from "./TrackList";
 import MixerPanel from "./MixerPanel";
 import EffectsRack from "./EffectsRack";
 import ExportDialog from "./ExportDialog";
+import Playhead from "./Playhead";
 import { Sliders } from "lucide-react";
+
+const TRACK_HEADER_WIDTH = 192; // w-48 = 12rem = 192px
 
 export default function DAWWorkspace() {
   const { ready, initEngine } = useAudioEngine();
@@ -69,9 +72,11 @@ export default function DAWWorkspace() {
       <TransportBar />
 
       <div className="flex flex-1 overflow-hidden">
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <Timeline duration={duration} />
+        {/* Timeline + Tracks area with playhead overlay */}
+        <div className="flex-1 flex flex-col overflow-hidden relative">
+          <Timeline duration={duration} headerWidth={TRACK_HEADER_WIDTH} />
           <TrackList />
+          <Playhead duration={duration} />
         </div>
 
         {/* Effects toggle */}

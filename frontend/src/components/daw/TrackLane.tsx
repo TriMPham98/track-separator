@@ -84,7 +84,7 @@ export default function TrackLane({ track }: TrackLaneProps) {
       </div>
 
       {/* Waveform */}
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0" data-waveform>
         <WaveformDisplay url={track.url} color={track.color} />
       </div>
     </div>

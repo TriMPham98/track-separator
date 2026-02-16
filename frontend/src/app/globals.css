@@ -29,7 +29,7 @@ body {
   background: #52525b;
 }
 
-/* Range input styling */
+/* Range input styling - horizontal */
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
@@ -50,4 +50,22 @@ input[type="range"]::-webkit-slider-thumb {
   border-radius: 50%;
   background: #3b82f6;
   margin-top: -5px;
+}
+
+/* Vertical slider */
+.vertical-slider {
+  writing-mode: vertical-lr;
+  direction: rtl;
+  height: 100px;
+  width: 20px;
+}
+
+.vertical-slider::-webkit-slider-track {
+  width: 4px;
+  height: 100%;
+}
+
+.vertical-slider::-webkit-slider-thumb {
+  margin-top: 0;
+  margin-left: -5px;
 }

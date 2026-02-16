@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useCallback } from "react";
+import { useRef } from "react";
 import { useWaveSurfer } from "@/hooks/useWaveSurfer";
 
 interface WaveformDisplayProps {
@@ -15,7 +15,6 @@ export default function WaveformDisplay({ url, color }: WaveformDisplayProps) {
     url,
     container: containerRef.current,
     waveColor: color,
-    progressColor: color + "80",
     height: 64,
   });
 
