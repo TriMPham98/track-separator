@@ -1,6 +1,6 @@
 "use client";
 
-import { Play, Pause, Square, Repeat, Download } from "lucide-react";
+import { Play, Pause, Square, SkipBack, Repeat, Download } from "lucide-react";
 import { useTransport } from "@/hooks/useTransport";
 import { useStore } from "@/store";
 
@@ -12,7 +12,7 @@ function formatTime(seconds: number): string {
 }
 
 export default function TransportBar() {
-  const { isPlaying, togglePlayPause, stop, currentTime, loop, toggleLoop, bpm, setBpm } =
+  const { isPlaying, togglePlayPause, stop, seekTo, currentTime, loop, toggleLoop, bpm, setBpm } =
     useTransport();
   const setExportOpen = useStore((s) => s.setExportOpen);
 
@@ -36,6 +36,13 @@ export default function TransportBar() {
           aria-label="Stop"
         >
           <Square className="w-4 h-4" />
+        </button>
+        <button
+          onClick={() => seekTo(0)}
+          className="w-10 h-10 flex items-center justify-center rounded-lg bg-zinc-800 hover:bg-zinc-700 transition-colors"
+          aria-label="Restart"
+        >
+          <SkipBack className="w-4 h-4" />
         </button>
       </div>
 
