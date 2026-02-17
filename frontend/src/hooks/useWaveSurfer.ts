@@ -21,11 +21,15 @@ export function useWaveSurfer({
   useEffect(() => {
     if (!container) return;
 
+    // Dummy audio element prevents WaveSurfer from creating its own
+    // playback chain — Tone.js handles all audio playback
+    const dummy = document.createElement("audio");
+
     const ws = WaveSurfer.create({
       container,
       url,
       waveColor,
-      progressColor: waveColor, // same as wave — no progress shading
+      progressColor: waveColor,
       height,
       barWidth: 2,
       barGap: 1,
@@ -33,6 +37,7 @@ export function useWaveSurfer({
       cursorWidth: 0,
       interact: false,
       normalize: true,
+      media: dummy,
     });
 
     wsRef.current = ws;
