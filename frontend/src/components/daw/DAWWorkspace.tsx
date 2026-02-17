@@ -49,6 +49,10 @@ export default function DAWWorkspace() {
           setPlaying(true);
         }
       }
+      if (e.code === "Enter") {
+        e.preventDefault();
+        AudioEngine.getInstance().seekTo(0);
+      }
     };
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
