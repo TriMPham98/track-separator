@@ -25,15 +25,16 @@ export default function Slider({
     return (
       <div className={`flex flex-col items-center gap-1 ${className}`}>
         {label && <label className="text-xs text-zinc-500">{label}</label>}
-        <input
-          type="range"
-          min={min}
-          max={max}
-          step={step}
-          value={value}
-          onChange={(e) => onChange(parseFloat(e.target.value))}
-          className="vertical-slider accent-blue-500"
-        />
+        <div className="vertical-slider-wrapper">
+          <input
+            type="range"
+            min={min}
+            max={max}
+            step={step}
+            value={value}
+            onChange={(e) => onChange(parseFloat(e.target.value))}
+          />
+        </div>
       </div>
     );
   }
