@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useAudioEngine } from "@/hooks/useAudioEngine";
 import { AudioEngine } from "@/audio/AudioEngine";
 import { useStore } from "@/store";
+import { useTransport } from "@/hooks/useTransport";
 import TransportBar from "./TransportBar";
 import Timeline from "./Timeline";
 import TrackList from "./TrackList";
@@ -20,6 +21,7 @@ export default function DAWWorkspace() {
   const toggleEffects = useStore((s) => s.toggleEffects);
   const effectsOpen = useStore((s) => s.effectsOpen);
   const [duration, setDuration] = useState(0);
+  const { togglePlayPause, seekTo } = useTransport();
 
   // Update duration when tracks load
   useEffect(() => {
@@ -35,28 +37,24 @@ export default function DAWWorkspace() {
 
   // Keyboard shortcuts
   useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => {
+    const handleKeyDown = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement) return;
       if (e.code === "Space") {
         e.preventDefault();
-        const { isPlaying, setPlaying } = useStore.getState();
-        const engine = AudioEngine.getInstance();
-        if (isPlaying) {
-          engine.pause();
-          setPlaying(false);
-        } else {
-          engine.play();
-          setPlaying(true);
+        // Blur focused button to prevent Space keyup from also triggering a click
+        if (document.activeElement instanceof HTMLButtonElement) {
+          document.activeElement.blur();
         }
+        togglePlayPause();
       }
       if (e.code === "Enter") {
         e.preventDefault();
-        AudioEngine.getInstance().seekTo(0);
+        seekTo(0);
       }
     };
-    window.addEventListener("keydown", handleKey);
-    return () => window.removeEventListener("keydown", handleKey);
-  }, []);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [togglePlayPause, seekTo]);
 
   if (!ready) {
     return (

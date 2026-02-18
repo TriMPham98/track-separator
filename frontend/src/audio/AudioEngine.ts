@@ -9,6 +9,7 @@ export class AudioEngine {
   private masterBus: MasterBus;
   private started = false;
   private unsubscribers: (() => void)[] = [];
+  private _transportBusy = false;
 
   private constructor() {
     this.masterBus = new MasterBus();
@@ -58,12 +59,49 @@ export class AudioEngine {
     }
   }
 
+  get transportState(): string {
+    return Tone.getTransport().state;
+  }
+
   play() {
-    Tone.getTransport().start();
+    if (this._transportBusy) return;
+    this._transportBusy = true;
+    try {
+      if (Tone.getTransport().state !== "started") {
+        Tone.getTransport().start();
+      }
+    } finally {
+      this._transportBusy = false;
+    }
   }
 
   pause() {
-    Tone.getTransport().pause();
+    if (this._transportBusy) return;
+    this._transportBusy = true;
+    try {
+      if (Tone.getTransport().state === "started") {
+        Tone.getTransport().pause();
+      }
+    } finally {
+      this._transportBusy = false;
+    }
+  }
+
+  togglePlayPause(): boolean {
+    if (this._transportBusy) return Tone.getTransport().state === "started";
+    this._transportBusy = true;
+    try {
+      const transport = Tone.getTransport();
+      if (transport.state === "started") {
+        transport.pause();
+        return false;
+      } else {
+        transport.start();
+        return true;
+      }
+    } finally {
+      this._transportBusy = false;
+    }
   }
 
   stop() {

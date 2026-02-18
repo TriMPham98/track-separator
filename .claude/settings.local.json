@@ -14,7 +14,8 @@
       "Bash(pip install:*)",
       "Bash(/opt/homebrew/opt/python@3.13/bin/python3.13:*)",
       "Bash(source:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "mcp__ide__getDiagnostics"
     ]
   }
 }

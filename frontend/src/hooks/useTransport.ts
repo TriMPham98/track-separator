@@ -33,15 +33,16 @@ export function useTransport() {
   }, [setPlaying]);
 
   const togglePlayPause = useCallback(() => {
-    if (isPlaying) pause();
-    else play();
-  }, [isPlaying, play, pause]);
+    const engine = AudioEngine.getInstance();
+    const nowPlaying = engine.togglePlayPause();
+    setPlaying(nowPlaying);
+  }, [setPlaying]);
 
   const seekTo = useCallback((time: number) => {
     AudioEngine.getInstance().seekTo(time);
   }, []);
 
-  // Update time display via rAF
+  // Sync isPlaying state with actual transport state
   useEffect(() => {
     let raf: number;
     const update = () => {
@@ -50,12 +51,18 @@ export function useTransport() {
         const t = engine.currentTime;
         currentTimeRef.current = t;
         setDisplayTime(t);
+
+        // Keep Zustand in sync with transport
+        const transportPlaying = engine.transportState === "started";
+        if (transportPlaying !== useStore.getState().isPlaying) {
+          setPlaying(transportPlaying);
+        }
       } catch {}
       raf = requestAnimationFrame(update);
     };
     raf = requestAnimationFrame(update);
     return () => cancelAnimationFrame(raf);
-  }, []);
+  }, [setPlaying]);
 
   return {
     isPlaying,
